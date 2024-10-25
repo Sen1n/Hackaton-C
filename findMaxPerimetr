@@ -1,0 +1,40 @@
+PTYPE perimeterPolygone(const Polygone* p) {
+    PTYPE sum = 0;
+    for (NTYPE i = 0; i < p->n; i++) {
+        TPoint start = p->vertice[i];
+        TPoint end = p->vertice[(i + 1) % p->n]; 
+
+        TVECT edge = setVector(start, end);
+        sum += lengthVector(edge);
+    }
+    return sum;
+}
+
+int maxPerimeterPolygone(FILE* fp, Polygone* polygons) {
+    Polygone maxPolygon = polygons[0];
+    PTYPE maxPerimeter = perimeterPolygone(&polygons[0]);
+
+    for (NTYPE i = 1; i < polygons->n; i++) {
+        PTYPE currentPerimeter = perimeterPolygone(&polygons[i]);
+        if (currentPerimeter > maxPerimeter) {
+            maxPerimeter = currentPerimeter;
+            maxPolygon = polygons[i];
+        }
+    }
+
+    if (fp) {
+        fprintf(fp, "Max Perimeter Polygone: ");
+        for (NTYPE j = 0; j < maxPolygon.n; j++) {
+            fprintf(fp, "(%.2f, %.2f) ", maxPolygon.vertice[j].x, maxPolygon.vertice[j].y);
+        }
+        fprintf(fp, "\nPerimeter: %.2f\n", maxPerimeter);
+    } else {
+        printf("Max Perimeter Polygone: ");
+        for (NTYPE j = 0; j < maxPolygon.n; j++) {
+            printf("(%.2f, %.2f) ", maxPolygon.vertice[j].x, maxPolygon.vertice[j].y);
+        }
+        printf("\nPerimeter: %.2f\n", maxPerimeter);
+    }
+
+    return TRUE;
+}
