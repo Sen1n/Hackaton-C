@@ -1,0 +1,49 @@
+ // Встановлення вектора між двома точками
+TVECT setVector(TPoint x, TPoint y) {
+    TVECT v;
+    v.x = y.x - x.x;
+    v.y = y.y - x.y;
+    return v;
+}
+
+// Довжина вектора
+PTYPE lengthVector(TVECT v) {
+    return sqrt(v.x * v.x + v.y * v.y);
+}
+
+// Додавання двох векторів
+TVECT addVector(TVECT v1, TVECT v2) {
+    TVECT result;
+    result.x = v1.x + v2.x;
+    result.y = v1.y + v2.y;
+    return result;
+}
+
+// Віднімання двох векторів
+TVECT subVector(TVECT v1, TVECT v2) {
+    TVECT result;
+    result.x = v1.x - v2.x;
+    result.y = v1.y - v2.y;
+    return result;
+}
+
+// Скалярний добуток двох векторів
+PTYPE scalarMultVector(TVECT v1, TVECT v2) {
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+// Векторний добуток двох векторів
+TVECT vectorMultVector(TVECT v1, TVECT v2) {
+    TVECT result;
+    result.x = v1.y * v2.x - v1.x * v2.y;
+    result.y = 0; // Векторний добуток для 2D векторів має лише одну компоненту
+    return result;
+}
+
+// Множення вектора на скаляр
+TVECT multVector(PTYPE a, TVECT v) {
+    TVECT result;
+    result.x = a * v.x;
+    result.y = a * v.y;
+    return result;
+}
