@@ -1,0 +1,109 @@
+// площі багатокутника
+PTYPE areaPolygone(const Polygone* p) {
+    if (p->n < 3) return 0.0; // площа багатокутника з менше ніж 3 вершин дорівнює 0
+
+    PTYPE area = 0.0;
+    TPoint origin = p->vertice[0]; // перша вершина
+
+    // перебір усіх трикутників, що утворюються з першою вершиною
+    for (NTYPE i = 1; i < p->n - 1; i++) {
+        TPoint a = p->vertice[i];
+        TPoint b = p->vertice[i + 1];
+
+        // площа трикутника
+        area += 0.5 * fabs(origin.x * (a.y - b.y) + a.x * (b.y - origin.y) + b.x * (origin.y - a.y));
+    }
+
+    return area;
+}
+
+
+// знаходження багатокутника з мінімальною площею у файлі
+int minAreaPolygone(FILE* fp, Polygone* p) {
+    if (!fp || feof(fp)) return FALSE; // перевірка на правильність вхідних даних
+
+    NTYPE numPolygons;
+    fread(&numPolygons, sizeof(NTYPE), 1, fp); // зчитування к-сті багатокутників
+
+    if (numPolygons == 0) return FALSE;
+
+    PTYPE minArea = INFINITY; // початкове значення площі
+    Polygone minPolygon; 
+
+    for (NTYPE i = 0; i < numPolygons; i++) {
+        fread(p, sizeof(Polygone), 1, fp); // зчитування наступного багатокутника
+
+        PTYPE area = areaPolygone(p); 
+        if (area < minArea) {
+            minArea = area;
+            minPolygon = *p; // збереження багатокутника з новою мінімальною площею
+        }
+    }
+
+    printf("Polygon with minimum area: \n");
+    printf("Vertices: %u\n", minPolygon.n);
+    for (NTYPE i = 0; i < minPolygon.n; i++) {
+        printf("(%f, %f)\n", minPolygon.vertice[i].x, minPolygon.vertice[i].y);
+    }
+    printf("Area: %f\n", minArea);
+
+    return TRUE;
+}
+
+
+
+
+// кут між трьох точок A, B, C
+static double angleBetweenPoints(TPoint A, TPoint B, TPoint C) {
+    double ABx = B.x - A.x;
+    double ABy = B.y - A.y;
+    double ACx = C.x - A.x;
+    double ACy = C.y - A.y;
+
+    double dotProduct = ABx * ACx + ABy * ACy;
+    double magAB = sqrt(ABx * ABx + ABy * ABy);
+    double magAC = sqrt(ACx * ACx + ACy * ACy);
+
+    return acos(dotProduct / (magAB * magAC));
+}
+
+// чи т p всередині багатокутника poly? (через суму кутів)
+static int isPointInsidePolygon(const Polygone* poly, TPoint p) {
+    double angleSum = 0.0;
+
+    for (NTYPE i = 0; i < poly->n; i++) {
+        TPoint v1 = poly->vertice[i];
+        TPoint v2 = poly->vertice[(i + 1) % poly->n];
+        angleSum += angleBetweenPoints(p, v1, v2);
+    }
+
+    return fabs(angleSum - 2 * M_PI) < 1e-5;
+}
+
+// pointsPolygones
+extern NTYPE pointsPolygones(FILE* fp, TPoint p) {
+    if (!fp) return 0;
+
+    rewind(fp);  // повертаємося на початок файлу
+    unsigned int numPolygons;
+    fread(&numPolygons, sizeof(unsigned int), 1, fp);  // зчит к-сть багатокутників
+
+    NTYPE count = 0;
+    Polygone poly;
+
+    for (unsigned int i = 0; i < numPolygons; i++) {
+        fread(&poly.n, sizeof(NTYPE), 1, fp);
+        poly.vertice = (TPoint*) malloc(poly.n * sizeof(TPoint));
+        fread(poly.vertice, sizeof(TPoint), poly.n, fp);
+
+        if (isPointInsidePolygon(&poly, p)) {
+            count++;
+        }
+
+        free(poly.vertice); 
+    }
+
+    return count;
+}
+
+
